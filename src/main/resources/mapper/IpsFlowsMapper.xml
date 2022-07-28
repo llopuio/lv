@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.trafficanalysis.mapper.IpsFlowsMapper">
+
+    <select id="getIpsOfFlowsNum" resultType="java.util.Map">
+        SELECT total, count(*) as count
+        FROM ips_flows
+        GROUP BY total
+    </select>
+
+    <select id="getDstIPList" resultType="java.util.Map">
+        SELECT dst_ip, ${protocolType}
+        FROM ips_flows
+        WHERE src_ip=#{srcIP} and day=#{date} and ${protocolType}>#{threshold}
+    </select>
+
+</mapper>

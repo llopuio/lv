@@ -1,0 +1,22 @@
+server:
+  port: 9526
+  servlet:
+    context-path: /
+spring:
+  datasource:
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/situation_analysis?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+logging:
+  level:
+    root: info
+    com.example: debug
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    #mp 默认的mapper.xml路径地址mapper-locations: classpath*:/mapper/**/*.xml,如果不是，需要自行配置

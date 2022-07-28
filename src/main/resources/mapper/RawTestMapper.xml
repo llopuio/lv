@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.trafficanalysis.mapper.RawTestMapper">
+    <select id="getById" resultType="com.example.trafficanalysis.entity.RawData">
+        SELECT * FROM raw_data where label_event = #{labelEvent}
+    </select>
+    <select id="getById1" resultType="com.example.trafficanalysis.entity.RawData">
+        SELECT * FROM  raw_data where id = #{id}
+    </select>
+    <select id="getEventList" resultType="com.example.trafficanalysis.entity.EventType">
+        SELECT label_event as number,count(*) as count FROM  raw_data group by label_event
+    </select>
+    <select id="getEventsChange" resultType="com.example.trafficanalysis.entity.vo.EventsChange">
+        SELECT DATE_FORMAT(datetime,"%Y-%m-%d") as day, label_event, count(label_event) as count
+        FROM raw_data
+        WHERE datetime >= #{startTime}
+        AND datetime &lt;= #{endTime}
+        GROUP BY day,label_event
+    </select>
+    <select id="getFlowSequence" resultType="com.example.trafficanalysis.entity.vo.FlowSequence">
+        SELECT DATE_FORMAT(datetime,"%Y-%m") as month, SUM(bytes) as bytes
+        FROM raw_data
+        GROUP BY month
+    </select>
+    <select id="getTrafficChange" resultType="com.example.trafficanalysis.entity.vo.TrafficChange">
+        SELECT DATE_FORMAT(datetime,"%Y-%m") as month , SUM(${type}) as data
+        FROM raw_data
+        GROUP BY month
+    </select>
+    <select id="getDestinationCount" resultType="com.example.trafficanalysis.entity.vo.TrafficChange">
+        SELECT DATE_FORMAT(datetime,"%Y-%m") as month, count(distinct(${type})) as data
+        FROM raw_data
+        GROUP BY month
+    </select>
+    <select id="getEquipmentCountYearSrc" resultType="java.lang.String">
+        SELECT distinct(src_ip) from raw_data
+        WHERE DATE_FORMAT(datetime,"%Y") = #{datetime}
+    </select>
+    <select id="getEquipmentCountYearDst" resultType="java.lang.String">
+        SELECT distinct(dst_ip) from raw_data
+        WHERE DATE_FORMAT(datetime,"%Y") = #{datetime}
+    </select>
+    <select id="getEquipmentCountMonthSrc" resultType="java.lang.String">
+        SELECT distinct(src_ip) from raw_data
+        WHERE DATE_FORMAT(datetime, "%Y-%m") = #{datetime}
+    </select>
+    <select id="getEquipmentCountMonthDst" resultType="java.lang.String">
+        SELECT distinct(dst_ip) from raw_data
+        WHERE DATE_FORMAT(datetime, "%Y-%m") = #{datetime}
+    </select>
+    <select id="getEquipmentCountDaySrc" resultType="java.lang.String">
+        SELECT distinct(src_ip) from raw_data
+        WHERE DATE_FORMAT(datetime,"%Y-%m-%d") = #{datetime}
+    </select>
+    <select id="getEquipmentCountDayDst" resultType="java.lang.String">
+        SELECT distinct(dst_ip) from raw_data
+        WHERE DATE_FORMAT(datetime,"%Y-%m-%d") = #{datetime}
+    </select>
+    <select id="getImportantAssets" resultType="java.lang.String">
+        SELECT temp.dst_ip
+        FROM(
+            SELECT dst_ip, count(*) as count from raw_data
+            WHERE DATE_FORMAT(datetime, ${style}) = #{datetime} group by dst_ip
+                ) As temp
+        WHERE temp.count > 10
+    </select>
+    <select id="getEventsCount" resultType="java.lang.Integer">
+        SELECT count(*) from raw_data
+        WHERE DATE_FORMAT(datetime,${style}) = #{datetime}
+    </select>
+
+    <select id="getImportantAssetsEvents" resultType="java.lang.Integer">
+        SELECT SUM(count)
+        FROM(
+            SELECT dst_ip, count(*) as count from raw_data
+            WHERE DATE_FORMAT(datetime,${style}) = #{datetime} group by dst_ip
+                ) As temp
+        WHERE temp.count > 10
+    </select>
+    <select id="getSeasonalPattern" resultType="com.example.trafficanalysis.entity.vo.FlowSequence">
+        SELECT month , bytes
+        FROM 2019_${eventType}
+    </select>
+    <!--
+    <select id="getSeasonalPattern" resultType="com.example.trafficanalysis.entity.vo.FlowSequence">
+        SELECT DATE_FORMAT(datetime,"%Y-%m") as month, SUM(bytes) as bytes
+        FROM raw_data
+        WHERE label_event = #{eventType}
+        GROUP BY month
+    </select>
+    -->
+    <!--
+    <select id="getPatrolPattern" resultType="com.example.trafficanalysis.entity.vo.PatrolPattern">
+        SELECT DATE_FORMAT(datetime,"%Y-%m-%d") as date, SUM(bytes) as bytes, latitude,longtitude,height, count(distinct(src_ip))
+        FROM raw_data
+        WHERE datetime = #{date} and latitude like '%${latitude}.%' and longtitude like '%${longtitude}.%' and height>=#{height}
+    </select>
+    -->
+    <select id="getIPList" resultType="java.lang.String">
+        SELECT src_ip
+        FROM temporal_relationship
+        GROUP BY src_ip
+    </select>
+
+    <!--先按一天的平均值来计算，查询一年的数据太多了，写死了-->
+    <!--
+    <select id="getPatrolPattern" resultType="com.example.trafficanalysis.entity.vo.PatrolPattern">
+        SELECT data.latitude as latitude, data.longtitude as longtitude, data.height as height,data.flows as flows,data.nodes as nodes,data.date
+        FROM (
+            SELECT latitude,longtitude,height,SUM(flows) as flows,count(src_ip) as nodes,DATE_FORMAT(datetime,"%Y-%m-%d") as date
+            FROM raw_data
+            WHERE DATE_FORMAT(datetime,"%Y-%m-%d") = #{date}
+            GROUP BY latitude,longtitude,height) as data
+        WHERE data.flows > 3.6
+    </select>
+    -->
+    <select id="getLink" resultType="java.lang.String">
+        SELECT dst_ip
+        FROM temporal_relationship
+        WHERE src_ip = #{srcIp}
+    </select>
+    <select id="getOrganizationNode" resultType="com.example.trafficanalysis.entity.vo.Link">
+        SELECT `from`,`to`
+        FROM ${tablename}
+        WHERE date = #{date} and label_event=#{label_event}
+    </select>
+    <!--
+    <select id="getIpsOfFlowsNum" resultType="com.example.trafficanalysis.entity.vo.FlowsNum">
+        SELECT ${protocolType}, COUNT(*)
+        FROM ips_flows
+        GROUP BY ${protocolType}
+    </select>
+    -->
+
+</mapper>

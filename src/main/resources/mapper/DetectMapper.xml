@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.trafficanalysis.mapper.DetectMapper">
+
+    <select id="getEventDetection" resultType="java.util.Map">
+        SELECT datetime,event_num
+        FROM ${dateType}_demo
+        WHERE DATE_FORMAT(datetime,"%Y")=${year}
+    </select>
+
+    <select id="getPredict" resultType="java.util.Map">
+        SELECT datetime,${feature}
+        FROM predict_data
+    </select>
+
+    <select id="getTrue" resultType="java.util.Map">
+        SELECT datetime,${feature}_true
+        FROM predict_data
+    </select>
+</mapper>
